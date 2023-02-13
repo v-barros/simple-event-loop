@@ -8,7 +8,6 @@ The image bellow is an illustration of an event loop for sockets, and it's very 
 |:--:|
 | <b>Fig.1 - https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/</b>|
 
-
 # Running 
 
 ## Prerequisites:
