@@ -9,9 +9,10 @@
 #include "eventloop.h"
 #include "events.h"
 #define PORT 8080
-#define TIMEOUT 605
 
 static inline void check_timeout(long now,int *checkpos);
+int epollfd;
+s_event events_t[EVENTS_MAX + 1];
 
 int main()
 {
@@ -20,27 +21,23 @@ int main()
     assert (epollfd> 0);
     printf("epoll file descriptor [%d]\n ",epollfd);
     init_loop(epollfd, port);
-    printf("%ld ",sizeof(s_event));
     struct epoll_event events[EVENTS_MAX+1];             
-    printf("server running:port[%d]\n", port);
+    printf("server running!\n using port [%d]\n", port);
 
     int checkpos = 0, i;
-    long end = time(NULL) + TIMEOUT;
-    long now = time(NULL);
+    long now;
     while (1) {
         now=time(NULL);
-        if(now>end)
-            break;
-        
+       
         check_timeout(now,&checkpos);
 
-        int nfd = epoll_wait(epollfd, events, EVENTS_MAX+1, 20);
-        if (nfd < 0) {
+        int number_of_events = epoll_wait(epollfd, events, EVENTS_MAX+1, 20);
+        if (number_of_events < 0) {
             printf("epoll_wait error, exit\n");
             break;
         }
         
-        for (i = 0; i < nfd; i++) {
+        for (i = 0; i < number_of_events; i++) {
             s_event *ev = (s_event*)events[i].data.ptr;  
             if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN))
                 ev->callback(ev->fd, ev->arg,now);
@@ -59,7 +56,6 @@ static inline void check_timeout(long now,int *checkpos){
             }        
             long duration = now - events_t[ck].last_active;       
             if (duration >= 30L) {
-                printf("[%d] ",ck);
                 close(events_t[ck].fd);                           
                 printf("[fd=%d] timeout\n", events_t[ck].fd);
                 event_rm(&events_t[ck],epollfd);                   

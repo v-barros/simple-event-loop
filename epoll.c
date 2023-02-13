@@ -48,7 +48,6 @@ void event_set(s_event * ev, int fd, event_handler callback, void * arg,long tim
     ev->events = 0;
     ev->arg = arg;
     ev->status = EVENT_OFF;
-    ev->len = 0;
     ev->last_active = time_now;    
 }
 
